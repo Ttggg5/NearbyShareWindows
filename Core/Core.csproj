@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>NearbyShare.Core</AssemblyName>
+    <RootNamespace>NearbyShare.Core</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- mDNS / DNS-SD. Makaretu.Dns.Multicast is the only widely used, actively
+         published .NET package that can BOTH advertise a service (with TXT
+         records) and browse for peers; Zeroconf and Tmds.MDns are browse-only. -->
+    <PackageReference Include="Makaretu.Dns.Multicast" Version="0.27.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Core.Tests" />
+  </ItemGroup>
+
+</Project>
