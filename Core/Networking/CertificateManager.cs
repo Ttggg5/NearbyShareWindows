@@ -246,16 +246,39 @@ public sealed class CertificateManager : IDisposable
         }
     }
 
+    /// <summary>
+    /// Reduces a user-chosen device name to something safe to place in a
+    /// certificate subject.
+    /// </summary>
+    /// <remarks>
+    /// The metacharacters are stripped rather than backslash-escaped: .NET's
+    /// <see cref="X500DistinguishedName"/> string parser does not accept an
+    /// escaped '=', so escaping would throw on perfectly ordinary device names
+    /// like "Desk = Home". The subject is cosmetic under TOFU — identity comes
+    /// from the fingerprint — so losing a character is harmless, whereas letting
+    /// a device name inject extra RDNs is not.
+    /// </remarks>
     private static string EscapeCommonName(string commonName)
     {
         string trimmed = string.IsNullOrWhiteSpace(commonName) ? "NearbyShare Device" : commonName.Trim();
 
-        // X.500 metacharacters would otherwise let a device name inject extra RDNs.
-        foreach (char c in new[] { '\\', ',', '+', '"', '<', '>', ';', '=' })
+        var builder = new System.Text.StringBuilder(trimmed.Length);
+        foreach (char c in trimmed)
         {
-            trimmed = trimmed.Replace(c.ToString(), "\\" + c);
+            if (c is '\\' or ',' or '+' or '"' or '<' or '>' or ';' or '=' or '#' || char.IsControl(c))
+            {
+                continue;
+            }
+
+            builder.Append(c);
         }
 
-        return trimmed.Length > 64 ? trimmed[..64] : trimmed;
+        string sanitized = builder.ToString().Trim();
+        if (sanitized.Length == 0)
+        {
+            sanitized = "NearbyShare Device";
+        }
+
+        return sanitized.Length > 64 ? sanitized[..64] : sanitized;
     }
 }

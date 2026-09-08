@@ -167,6 +167,11 @@ public sealed class TransferSession
                     StreamBufferSize,
                     useAsync: true);
 
+                // Nothing may be written between files: PROTOCOL.md §5 step 4
+                // streams them "back-to-back, with no additional framing", and the
+                // receiver switches straight from the last byte of one file to the
+                // first byte of the next. A control frame injected here would be
+                // consumed as file content and desynchronize the whole stream.
                 overallSent = await PumpAsync(
                     source,
                     _stream,
@@ -178,13 +183,8 @@ public sealed class TransferSession
                     overallSent,
                     totalBytes,
                     hasher: null,
-                    emitProgressMessages: true,
                     progress,
                     cancellationToken).ConfigureAwait(false);
-
-                // A per-file DONE lets the receiver close each file as it lands.
-                await MessageCodec.WriteAsync(_stream, DoneMessage.Create(transferId, FileIndex.Of(index)), cancellationToken)
-                    .ConfigureAwait(false);
             }
 
             // §5 step 5.
@@ -307,7 +307,6 @@ public sealed class TransferSession
                         overallReceived,
                         totalBytes,
                         hasher,
-                        emitProgressMessages: false,
                         progress,
                         cancellationToken).ConfigureAwait(false);
 
@@ -359,9 +358,18 @@ public sealed class TransferSession
     // =====================================================================
 
     /// <summary>
-    /// Copies exactly <paramref name="length"/> bytes, reporting progress and
-    /// optionally emitting <c>PROGRESS</c> messages on the control channel.
+    /// Copies exactly <paramref name="length"/> bytes, reporting progress locally.
     /// </summary>
+    /// <remarks>
+    /// No <c>PROGRESS</c> message is written to the socket from here. PROTOCOL.md
+    /// §5 step 4 makes them optional ("may emit"), and while file bytes are in
+    /// flight the connection is carrying an unframed raw stream — a control frame
+    /// written into it would be read back as file content. Progress therefore
+    /// drives the UI through <see cref="IProgress{T}"/> and
+    /// <see cref="ProgressChanged"/> only. Inbound <c>PROGRESS</c> messages are
+    /// still accepted wherever the session is reading control messages, so a peer
+    /// that does send them costs us nothing.
+    /// </remarks>
     private async Task<long> PumpAsync(
         Stream source,
         Stream destination,
@@ -373,7 +381,6 @@ public sealed class TransferSession
         long overallAlready,
         long overallTotal,
         HashAlgorithm? hasher,
-        bool emitProgressMessages,
         IProgress<TransferProgress>? progress,
         CancellationToken cancellationToken)
     {
@@ -421,32 +428,11 @@ public sealed class TransferSession
             overall += read;
 
             Report(force: false);
-
-            if (emitProgressMessages && ShouldEmitProgressMessage(DateTimeOffset.UtcNow))
-            {
-                await MessageCodec.WriteAsync(
-                    _stream,
-                    ProgressMessage.Create(transferId, fileIndex, fileTransferred, length),
-                    cancellationToken).ConfigureAwait(false);
-            }
         }
 
         await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
         Report(force: true);
         return overall;
-    }
-
-    private DateTimeOffset _lastProgressMessage = DateTimeOffset.MinValue;
-
-    private bool ShouldEmitProgressMessage(DateTimeOffset now)
-    {
-        if (now - _lastProgressMessage < ProgressInterval)
-        {
-            return false;
-        }
-
-        _lastProgressMessage = now;
-        return true;
     }
 
     /// <summary>Reads the peer's <c>HELLO</c> and applies the checks of PROTOCOL.md §2 step 5 and §6.</summary>

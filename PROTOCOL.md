@@ -139,6 +139,19 @@ integrity after writing the file to disk.
    `OFFER`, back-to-back, with no additional framing (the receiver already
    knows each file's declared size). Either side may emit periodic `PROGRESS`
    messages to drive UI (not required to be acknowledged).
+
+   **Clarification (v1):** "no additional framing" applies for the entire span
+   from the first byte of the first file to the last byte of the last file. The
+   sender must not write *any* framed message into that span — not a `PROGRESS`,
+   and not a per-file `DONE` — because the receiver reads exactly
+   `files[i].size` bytes and then begins reading `files[i+1]` immediately, so an
+   interleaved frame would be consumed as file content and desynchronize the
+   remainder of the stream. The sender's `PROGRESS` allowance therefore applies
+   only before the first byte and after the last; a receiver may send `PROGRESS`
+   at any time, since the sender is not reading while it streams. Because the
+   MVP drives its progress UI locally on each side, neither implementation is
+   required to put `PROGRESS` on the wire at all — but both must accept and
+   ignore one wherever they are reading control messages.
 5. After the last byte of the last file, sender sends `DONE`
    (`fileIndex: "all"`). Receiver verifies checksums if provided, and the
    connection may then be closed.

@@ -1,0 +1,11 @@
+{
+  "v": 1,
+  "type": "PROGRESS",
+  "id": "5c1b1e2a-4f80-4d3b-9a71-c8e0f6b2d451",
+  "payload": {
+    "transferId": "5c1b1e2a-4f80-4d3b-9a71-c8e0f6b2d451",
+    "fileIndex": 0,
+    "bytesTransferred": 4096,
+    "totalBytes": 2458112
+  }
+}

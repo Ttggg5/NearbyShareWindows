@@ -16,7 +16,7 @@ namespace NearbyShare.Core.Networking;
 /// merely recorded here and the TOFU check runs afterwards, in
 /// <see cref="TransferSession"/>.
 /// </remarks>
-public sealed class TlsListener : IAsyncDisposable
+public sealed class TlsListener : IDisposable, IAsyncDisposable
 {
     private readonly X509Certificate2 _serverCertificate;
     private readonly IPAddress _bindAddress;
@@ -182,15 +182,20 @@ public sealed class TlsListener : IAsyncDisposable
         _listener = null;
     }
 
-    public ValueTask DisposeAsync()
+    public void Dispose()
     {
         if (_disposed)
         {
-            return ValueTask.CompletedTask;
+            return;
         }
 
         _disposed = true;
         Stop();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
         return ValueTask.CompletedTask;
     }
 }
