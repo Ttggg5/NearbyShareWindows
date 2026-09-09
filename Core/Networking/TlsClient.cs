@@ -79,7 +79,17 @@ public sealed class TlsClient
                     // trust is symmetric under PROTOCOL.md §2.
                     ClientCertificates = new X509CertificateCollection { _clientCertificate },
                     CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
-                    EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+
+                    // TLS 1.2 only. Mutual TLS (a client certificate, which this
+                    // protocol always presents) is where TLS 1.3 interop breaks
+                    // down: Schannel has a long history of aborting a TLS 1.3
+                    // handshake that requests a client certificate against a
+                    // non-Windows peer, closing the raw socket instead of sending
+                    // an alert -- surfacing here as "Received an unexpected EOF or
+                    // 0 bytes from the transport stream" and as nothing at all on
+                    // the other side, since the connection never reaches its app
+                    // code. TLS 1.2 mutual auth has none of these issues.
+                    EnabledSslProtocols = SslProtocols.Tls12,
                 },
                 cancellationToken).ConfigureAwait(false);
         }

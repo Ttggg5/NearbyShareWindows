@@ -101,7 +101,12 @@ public sealed class TlsListener : IDisposable, IAsyncDisposable
                     // chain validation with fingerprint pinning after HELLO.
                     ClientCertificateRequired = true,
                     CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
-                    EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+
+                    // TLS 1.2 only -- see the matching comment in TlsClient. Mutual
+                    // TLS 1.3 (client certificates) has known Schannel interop
+                    // failures against non-Windows peers; TLS 1.2 mutual auth does
+                    // not have this problem.
+                    EnabledSslProtocols = SslProtocols.Tls12,
                 },
                 cancellationToken).ConfigureAwait(false);
         }
