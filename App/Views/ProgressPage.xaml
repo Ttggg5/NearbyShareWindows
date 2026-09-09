@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="NearbyShare.App.Views.ProgressPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/winfx/2006/xaml/presentation/design"
+    mc:Ignorable="d">
+
+    <Grid Padding="24" RowSpacing="16" MaxWidth="520" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Transfer" Style="{ThemeResource TitleTextBlockStyle}"/>
+
+        <StackPanel Grid.Row="1" Spacing="4" Visibility="{x:Bind ViewModel.IsActive, Mode=OneWay}">
+            <TextBlock Text="{x:Bind ViewModel.PeerDeviceName, Mode=OneWay}" FontWeight="SemiBold"/>
+            <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" TextWrapping="Wrap"/>
+            <TextBlock Text="{x:Bind ViewModel.CurrentFileName, Mode=OneWay}" Opacity="0.7" TextTrimming="CharacterEllipsis"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Spacing="8" Visibility="{x:Bind ViewModel.IsActive, Mode=OneWay}">
+            <ProgressBar Value="{x:Bind ViewModel.OverallFraction, Mode=OneWay}" Maximum="1"/>
+            <TextBlock Text="{x:Bind ViewModel.BytesSummary, Mode=OneWay}" Opacity="0.7" FontSize="12"/>
+        </StackPanel>
+
+        <Button Grid.Row="3"
+                Content="Cancel transfer"
+                Command="{x:Bind ViewModel.CancelCommand}"
+                Visibility="{x:Bind ViewModel.CanCancel, Mode=OneWay}"/>
+
+        <StackPanel Grid.Row="4" Spacing="4" Visibility="{x:Bind ViewModel.IsIdle, Mode=OneWay}">
+            <TextBlock Text="No transfer in progress." Opacity="0.7"/>
+            <TextBlock Text="{x:Bind ViewModel.LastResultText, Mode=OneWay}" Opacity="0.7" TextWrapping="Wrap"/>
+        </StackPanel>
+    </Grid>
+</Page>

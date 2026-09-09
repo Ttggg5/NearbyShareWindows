@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="NearbyShare.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/winfx/2006/xaml/presentation/design"
+    mc:Ignorable="d">
+
+    <Grid Padding="24" RowSpacing="20" MaxWidth="480" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Settings" Style="{ThemeResource TitleTextBlockStyle}"/>
+
+        <StackPanel Grid.Row="1" Spacing="8">
+            <TextBlock Text="Device name" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="This is the name other devices see when they search for you." Opacity="0.7" TextWrapping="Wrap"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBox Width="260" Text="{x:Bind ViewModel.DeviceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Content="Save" Command="{x:Bind ViewModel.SaveDeviceNameCommand}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Spacing="8">
+            <TextBlock Text="Download folder" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="{x:Bind ViewModel.DownloadFolder, Mode=OneWay}" TextWrapping="Wrap" Opacity="0.7"/>
+            <Button Content="Choose folder…" Command="{x:Bind ViewModel.ChooseDownloadFolderCommand}"/>
+        </StackPanel>
+
+        <ProgressRing Grid.Row="3" IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+                      Width="20" Height="20" HorizontalAlignment="Left"/>
+
+        <TextBlock Grid.Row="4" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" Opacity="0.7" TextWrapping="Wrap"/>
+    </Grid>
+</Page>

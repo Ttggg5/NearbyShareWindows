@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="NearbyShare.App.Views.DeviceListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:NearbyShare.App.ViewModels"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/winfx/2006/xaml/presentation/design"
+    mc:Ignorable="d">
+
+    <Grid Padding="24" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="4">
+            <TextBlock Text="Nearby devices" Style="{ThemeResource TitleTextBlockStyle}"/>
+            <TextBlock Text="{x:Bind ViewModel.LocalIdentitySummary, Mode=OneWay}" Opacity="0.7"/>
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" Opacity="0.7"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button Content="Refresh" Command="{x:Bind ViewModel.RefreshCommand}"/>
+            <Button Content="Send files…" Command="{x:Bind ViewModel.SendToSelectedPeerCommand}"/>
+            <ProgressRing IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" Width="20" Height="20"/>
+        </StackPanel>
+
+        <Grid Grid.Row="2">
+            <ListView ItemsSource="{x:Bind ViewModel.Peers}"
+                      SelectedItem="{x:Bind ViewModel.SelectedPeer, Mode=TwoWay}"
+                      SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PeerItemViewModel">
+                        <StackPanel Orientation="Horizontal" Spacing="12" Padding="4">
+                            <FontIcon Glyph="&#xE8B7;" VerticalAlignment="Center"/>
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{x:Bind DeviceName, Mode=OneWay}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{x:Bind PlatformLabel, Mode=OneWay}" Opacity="0.7" FontSize="12"/>
+                                <TextBlock Text="{x:Bind Address, Mode=OneWay}" Opacity="0.7" FontSize="12"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <TextBlock Text="No devices found yet. Make sure the other device is on the same network and NearbyShare is running there too."
+                       TextWrapping="Wrap"
+                       MaxWidth="420"
+                       TextAlignment="Center"
+                       Opacity="0.7"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Visibility="{x:Bind ViewModel.HasNoPeers, Mode=OneWay}"/>
+        </Grid>
+
+        <StackPanel Grid.Row="3" Spacing="8">
+            <TextBlock Text="Manual connection (debug / testing)" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="Skip discovery and connect to an IP and port directly — useful for testing a transfer before mDNS is confirmed working across your devices."
+                       TextWrapping="Wrap" Opacity="0.7" FontSize="12"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBox PlaceholderText="IP address" Width="180"
+                         Text="{x:Bind ViewModel.ManualHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox PlaceholderText="Port" Width="80"
+                         Text="{x:Bind ViewModel.ManualPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Content="Send to address" Command="{x:Bind ViewModel.SendToManualAddressCommand}"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>
